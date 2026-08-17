@@ -65,15 +65,38 @@ def main():
     elif workout_choice == 2:
         print("Du valgte intervalløkt")
 
-        intervals = [4, 4, 4, 4, 4]
+
+        number_of_intervals = int(input("hvor mange drag løp du? "))
+
+        interval_duration = float(input("Hvor mange minutter per drag? "))
+
+        interval_distances = []
+
+
+        
+        for i in range(number_of_intervals):
+            interval_distance = float(input(f"Hvor langt løp du på drag {i + 1}? "))
+            interval_distances.append(interval_distance)
+
+        for i, interval_distance in enumerate(interval_distances):
+            interval_pace = calculate_pace(interval_duration, interval_distance)
+
+            true_interval_pace = format_pace(interval_pace)
+           
+            print(f"Drag {i + 1}: {interval_distance} km - pace {true_interval_pace} min/km")
+           
+
+        
+
+        # intervals = [4, 4, 4, 4, 4]
     
-        total_run_time = 0
+        # total_run_time = 0
 
-        for interval in intervals:
-        print("Drag: ", interval, "min")
-        total_run_time += interval 
+        # for interval in intervals:
+        #     print("Drag: ", interval, "min")
+        #     total_run_time += interval 
 
-        print("Total terskeltid: ", total_run_time)
+        # print("Total terskeltid: ", total_run_time)
 
     
 
