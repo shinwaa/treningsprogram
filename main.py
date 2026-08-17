@@ -1,35 +1,82 @@
 def say_hello(name):
     print("Hei!", name)
 
-name = input("Hva heter du?")
-
-say_hello(name)
-
-distance = float(input("Hvor langt løp du?"))
-print("du løp", distance, "km")
-
-
-if  distance < 5:
-    print("kort økt")
-elif 5 <= distance <= 10:
-    print("middels økt")
-else:
-    print("lang økt")
-
-time = float(input("Hvor lang tid brukte du?"))
+def classify_workout(distance):
+    if distance < 5:
+        return "kort økt, godt jobba!"
+    elif distance < 10:
+        return "medium økt, godt jobba!"
+    else:
+        return "lang økt, godt jobba!"
 
 def calculate_pace(time, distance):
     return time / distance
+
+def format_pace(pace):
+    minutes = int(pace)
+    seconds = round((pace - minutes) * 60)
+    
+    if seconds == 60:
+        minutes += 1
+        seconds = 0
+
+    return f"{minutes}:{seconds:02d}"
+
+def get_number(prompt):
+    while True:
+        try:
+            number = float(input(prompt))
+           
+            if number > 0:
+                return number
+        
+            print("Tallet må være større enn 0.")
+
+        except ValueError:
+            print ("Du må skrive inn et gyldig tall.")
+
+def main():
+   
+    name = input("Hva heter du? ")
+    say_hello(name)
+
+    print("1. Vanlig løpetur")
+    print("2. Intervalløkt")
+    workout_choice = int(input("velg økttype: "))
     
 
-pace = calculate_pace(time, distance
-)
-minutes = int(pace)
-seconds = round((pace - minutes) * 60)
+    if workout_choice == 1:
+        print("Du valgte vanlig løpetur")
 
-if seconds == 60:
-    minutes += 1
-    seconds = 0
+        distance = get_number("Hvor langt løp du? ")
+        print("du løp", distance, "km")
 
-print(f"pace: {minutes}:{seconds:02d} min/km")
+        workout_type = classify_workout(distance)
+        print(workout_type)
 
+        time = get_number("Hvor lang tid brukte du? ")
+
+        pace = calculate_pace(time, distance)
+
+        formatted_pace = format_pace(pace)
+        print(f"pace: {formatted_pace} min/km")
+
+        
+    elif workout_choice == 2:
+        print("Du valgte intervalløkt")
+
+        intervals = [4, 4, 4, 4, 4]
+    
+        total_run_time = 0
+
+        for interval in intervals:
+        print("Drag: ", interval, "min")
+        total_run_time += interval 
+
+        print("Total terskeltid: ", total_run_time)
+
+    
+
+    
+if __name__ == "__main__":
+    main()
