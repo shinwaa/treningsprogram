@@ -26,10 +26,10 @@ def format_pace(pace):
     return f"{minutes}:{seconds:02d}"
 
 
-def get_number(prompt):
+def get_number(prompt, number_type):
     while True:
         try:
-            number = float(input(prompt))
+            number = number_type(input(prompt))
 
             if number > 0:
                 return number
@@ -39,32 +39,19 @@ def get_number(prompt):
         except ValueError:
             print("Du må skrive inn et gyldig tall.")
 
-
-def get_integer(prompt):
-    while True:
-        try:
-            number = int(input(prompt))
-
-            if number > 0:
-                return number
-
-            print("Tallet må være større enn 0.")
-
-        except ValueError:
-            print("Du må skrive inn et gyldig tall.")
 
 
 def handle_normal_run():
 
     print("Du valgte vanlig løpetur")
 
-    distance = get_number("Hvor langt løp du? ")
+    distance = get_number("Hvor langt løp du? ", float)
     print("du løp", distance, "km")
 
     workout_type = classify_workout(distance)
     print(workout_type)
 
-    time = get_number("Hvor lang tid brukte du? ")
+    time = get_number("Hvor lang tid brukte du? ", float)
 
     pace = calculate_pace(time, distance)
 
@@ -76,11 +63,11 @@ def handle_interval_run():
 
     print("Du valgte intervalløkt")
 
-    number_of_intervals = get_integer("hvor mange drag løp du? ")
+    number_of_intervals = get_number("hvor mange drag løp du? ", int)
 
-    interval_duration = get_number("Hvor mange minutter per drag? ")
+    interval_duration = get_number("Hvor mange minutter per drag? ", float)
 
-    pause_duration = get_number("Hvor mange minutter pause mellom dragene? ")
+    pause_duration = get_number("Hvor mange minutter pause mellom dragene? ", float)
 
     number_of_pauses = number_of_intervals - 1
 
@@ -89,7 +76,7 @@ def handle_interval_run():
     interval_distances = []
 
     for i in range(number_of_intervals):
-        interval_distance = get_number(f"Hvor langt løp du på drag {i + 1}? ")
+        interval_distance = get_number(f"Hvor langt løp du på drag {i + 1}? ", float)
         interval_distances.append(interval_distance)
 
     (
@@ -98,6 +85,7 @@ def handle_interval_run():
         total_pause_duration,
         total_workout_duration,
         true_average_pace,
+        longest_interval,
     ) = summarize_interval_workout(
         interval_distances,
         interval_duration,
@@ -113,7 +101,14 @@ def handle_interval_run():
         true_average_pace,
         interval_distances,
         interval_duration,
+        longest_interval,
     )
+
+
+def find_longest_interval(interval_distances):
+
+    longest_interval = max(interval_distances)
+    return longest_interval
 
 
 def summarize_interval_workout(
@@ -129,12 +124,15 @@ def summarize_interval_workout(
 
     total_workout_duration = total_interval_duration + total_pause_duration
 
+    longest_interval = find_longest_interval(interval_distances)
+
     return (
         total_distance,
         total_interval_duration,
         total_pause_duration,
         total_workout_duration,
         true_average_pace,
+        longest_interval,
     )
 
 
@@ -146,6 +144,7 @@ def print_interval_summary(
     true_average_pace,
     interval_distances,
     interval_duration,
+    longest_interval,
 ):
 
     for i, interval_distance in enumerate(interval_distances):
@@ -157,11 +156,12 @@ def print_interval_summary(
             f"Drag {i + 1}: {interval_distance} km - pace {true_interval_pace} min/km"
         )
 
+    print(f"Lengste drag: {longest_interval} km")
+    print(f"Gjennomsnittspace på dragene: {true_average_pace} min/km")
     print(f"Total distanse på dragene: {total_distance} km.")
     print(f"Total arbeidstid: {total_interval_duration} min")
     print(f"Total pausetid: {total_pause_duration} min")
     print(f"Total tid: {total_workout_duration} min")
-    print(f"Gjennomsnittspace på dragene: {true_average_pace} min/km")
 
 
 def main():
@@ -173,7 +173,7 @@ def main():
     print("2. Intervalløkt")
 
     while True:
-        workout_choice = get_integer("velg økttype: ")
+        workout_choice = get_number("velg økttype: ", int)
 
         if workout_choice == 1 or workout_choice == 2:
             break
