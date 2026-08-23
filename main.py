@@ -1,5 +1,5 @@
 def say_hello(name):
-    print("Hei!", name)
+    print(f"Hei {name}!")
 
 
 def classify_workout(distance):
@@ -46,7 +46,7 @@ def handle_normal_run():
     print("Du valgte vanlig løpetur")
 
     distance = get_number("Hvor langt løp du? ", float)
-    print("du løp", distance, "km")
+    print(f"Du løp {distance} km")
 
     workout_type = classify_workout(distance)
     print(workout_type)
@@ -56,53 +56,39 @@ def handle_normal_run():
     pace = calculate_pace(time, distance)
 
     formatted_pace = format_pace(pace)
-    print(f"pace: {formatted_pace} min/km")
+    print(f"Pace: {formatted_pace} min/km")
 
 
 def handle_interval_run():
 
+    interval_data = {}
+
     print("Du valgte intervalløkt")
 
-    number_of_intervals = get_number("hvor mange drag løp du? ", int)
+    interval_data["number_of_intervals"] = get_number("Hvor mange drag løp du? ", int)
 
-    interval_duration = get_number("Hvor mange minutter per drag? ", float)
+    interval_data["interval_duration"] = get_number("Hvor mange minutter per drag? ", float)
 
-    pause_duration = get_number("Hvor mange minutter pause mellom dragene? ", float)
+    interval_data["pause_duration"] = get_number("Hvor mange minutter pause mellom dragene? ", float)
 
-    number_of_pauses = number_of_intervals - 1
+    interval_data["number_of_pauses"] = interval_data["number_of_intervals"] - 1
 
-    total_pause_duration = number_of_pauses * pause_duration
+    interval_data["total_pause_duration"] = interval_data["number_of_pauses"] * interval_data["pause_duration"]
 
     interval_distances = []
 
-    for i in range(number_of_intervals):
+    for i in range(interval_data["number_of_intervals"]):
         interval_distance = get_number(f"Hvor langt løp du på drag {i + 1}? ", float)
         interval_distances.append(interval_distance)
 
-    (
-        total_distance,
-        total_interval_duration,
-        total_pause_duration,
-        total_workout_duration,
-        true_average_pace,
-        longest_interval,
-    ) = summarize_interval_workout(
-        interval_distances,
-        interval_duration,
-        total_pause_duration,
-        number_of_intervals,
-    )
+    interval_data["interval_distances"] = interval_distances
+ 
 
-    print_interval_summary(
-        total_distance,
-        total_interval_duration,
-        total_pause_duration,
-        total_workout_duration,
-        true_average_pace,
-        interval_distances,
-        interval_duration,
-        longest_interval,
-    )
+
+    
+    interval_data = summarize_interval_workout(interval_data)
+
+    print_interval_summary(interval_data)
 
 
 def find_longest_interval(interval_distances):
@@ -111,44 +97,29 @@ def find_longest_interval(interval_distances):
     return longest_interval
 
 
-def summarize_interval_workout(
-    interval_distances, interval_duration, total_pause_duration, number_of_intervals
-):
+def summarize_interval_workout(interval_data):
 
-    total_interval_duration = number_of_intervals * interval_duration
-    average_interval_pace = calculate_pace(
-        total_interval_duration, sum(interval_distances)
+    interval_data["total_interval_duration"] = interval_data["number_of_intervals"] * interval_data["interval_duration"]
+
+    interval_data["average_interval_pace"] = calculate_pace(
+        interval_data["total_interval_duration"], sum(interval_data["interval_distances"])
     )
-    true_average_pace = format_pace(average_interval_pace)
-    total_distance = sum(interval_distances)
+    interval_data["true_average_pace"] = format_pace(interval_data["average_interval_pace"])
 
-    total_workout_duration = total_interval_duration + total_pause_duration
+    interval_data["total_distance"] = sum(interval_data["interval_distances"])
 
-    longest_interval = find_longest_interval(interval_distances)
+    interval_data["total_workout_duration"] = interval_data["total_interval_duration"] + interval_data["total_pause_duration"]
 
-    return (
-        total_distance,
-        total_interval_duration,
-        total_pause_duration,
-        total_workout_duration,
-        true_average_pace,
-        longest_interval,
-    )
+    interval_data["longest_interval"] = find_longest_interval(interval_data["interval_distances"])
 
 
-def print_interval_summary(
-    total_distance,
-    total_interval_duration,
-    total_pause_duration,
-    total_workout_duration,
-    true_average_pace,
-    interval_distances,
-    interval_duration,
-    longest_interval,
-):
+    return interval_data
 
-    for i, interval_distance in enumerate(interval_distances):
-        interval_pace = calculate_pace(interval_duration, interval_distance)
+
+def print_interval_summary(interval_data):
+
+    for i, interval_distance in enumerate(interval_data["interval_distances"]):
+        interval_pace = calculate_pace(interval_data["interval_duration"], interval_distance)
 
         true_interval_pace = format_pace(interval_pace)
 
@@ -156,12 +127,12 @@ def print_interval_summary(
             f"Drag {i + 1}: {interval_distance} km - pace {true_interval_pace} min/km"
         )
 
-    print(f"Lengste drag: {longest_interval} km")
-    print(f"Gjennomsnittspace på dragene: {true_average_pace} min/km")
-    print(f"Total distanse på dragene: {total_distance} km.")
-    print(f"Total arbeidstid: {total_interval_duration} min")
-    print(f"Total pausetid: {total_pause_duration} min")
-    print(f"Total tid: {total_workout_duration} min")
+    print(f"Lengste drag: {interval_data['longest_interval']} km")
+    print(f"Gjennomsnittspace på dragene: {interval_data['true_average_pace']} min/km")
+    print(f"Total distanse på dragene: {interval_data['total_distance']} km.")
+    print(f"Total arbeidstid: {interval_data['total_interval_duration']} min")
+    print(f"Total pausetid: {interval_data['total_pause_duration']} min")
+    print(f"Total tid: {interval_data['total_workout_duration']} min")
 
 
 def main():
@@ -173,7 +144,7 @@ def main():
     print("2. Intervalløkt")
 
     while True:
-        workout_choice = get_number("velg økttype: ", int)
+        workout_choice = get_number("Velg økttype: ", int)
 
         if workout_choice == 1 or workout_choice == 2:
             break
