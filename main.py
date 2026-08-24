@@ -1,6 +1,21 @@
+import json
+
 def say_hello(name):
     print(f"Hei {name}!")
 
+def save_workout(workout_data):
+        try:
+            with open("treningshistorikk.json", "r") as f:
+                existing_data = json.load(f)
+
+
+        except: 
+            existing_data = []
+
+        existing_data.append(workout_data)
+
+        with open("treningshistorikk.json", "w") as f:
+            json.dump(existing_data, f)
 
 def classify_workout(distance):
     if distance < 5:
@@ -43,21 +58,24 @@ def get_number(prompt, number_type):
 
 def handle_normal_run():
 
+    run_data = {}
+
     print("Du valgte vanlig løpetur")
 
-    distance = get_number("Hvor langt løp du? ", float)
-    print(f"Du løp {distance} km")
+    run_data["distance"] = get_number("Hvor langt løp du? ", float)
+    print(f"Du løp {run_data['distance']} km")
 
-    workout_type = classify_workout(distance)
-    print(workout_type)
+    run_data["workout_type"] = classify_workout(run_data["distance"])
+    print(run_data["workout_type"])
 
-    time = get_number("Hvor lang tid brukte du? ", float)
+    run_data["time"] = get_number("Hvor lang tid brukte du? ", float)
 
-    pace = calculate_pace(time, distance)
+    run_data["pace"] = calculate_pace(run_data["time"], run_data["distance"])
 
-    formatted_pace = format_pace(pace)
-    print(f"Pace: {formatted_pace} min/km")
+    run_data["formatted_pace"] = format_pace(run_data["pace"])
+    print(f"Pace: {run_data['formatted_pace']} min/km")
 
+    save_workout(run_data)
 
 def handle_interval_run():
 
@@ -90,6 +108,7 @@ def handle_interval_run():
 
     print_interval_summary(interval_data)
 
+    save_workout(interval_data)
 
 def find_longest_interval(interval_distances):
 
@@ -98,6 +117,9 @@ def find_longest_interval(interval_distances):
 
 
 def summarize_interval_workout(interval_data):
+
+    pace_per_interval = []
+        
 
     interval_data["total_interval_duration"] = interval_data["number_of_intervals"] * interval_data["interval_duration"]
 
@@ -112,6 +134,12 @@ def summarize_interval_workout(interval_data):
 
     interval_data["longest_interval"] = find_longest_interval(interval_data["interval_distances"])
 
+    for i, interval_distance in enumerate(interval_data["interval_distances"]):
+        interval_pace = calculate_pace(interval_data["interval_duration"], interval_distance)
+        true_interval_pace = format_pace(interval_pace)
+        pace_per_interval.append(true_interval_pace)
+
+    interval_data["pace_per_interval"] = pace_per_interval
 
     return interval_data
 
@@ -119,12 +147,9 @@ def summarize_interval_workout(interval_data):
 def print_interval_summary(interval_data):
 
     for i, interval_distance in enumerate(interval_data["interval_distances"]):
-        interval_pace = calculate_pace(interval_data["interval_duration"], interval_distance)
-
-        true_interval_pace = format_pace(interval_pace)
-
+        pace = interval_data["pace_per_interval"][i]
         print(
-            f"Drag {i + 1}: {interval_distance} km - pace {true_interval_pace} min/km"
+            f"Drag {i + 1}: {interval_distance} km - pace {pace} min/km"
         )
 
     print(f"Lengste drag: {interval_data['longest_interval']} km")
@@ -135,6 +160,24 @@ def print_interval_summary(interval_data):
     print(f"Total tid: {interval_data['total_workout_duration']} min")
 
 
+def show_history():
+    try:
+        with open("treningshistorikk.json", "r") as f:
+            history_data = json.load(f)
+
+    except:
+        print("Du har ikke noe treningsdata enda.")
+        return
+
+    for i, workout in enumerate(history_data):
+        if "number_of_intervals" in workout:
+            print(f"{i + 1}. Interval økt: {workout['number_of_intervals']} drag, gjennomsnittspace:{workout['true_average_pace']} min/km, distanse løpt: {workout['total_distance']} km.")
+
+        else:
+            print(f"{i + 1}. Normal økt: Distanse: {workout['distance']} km, pace: {workout['formatted_pace']} min/km")
+        
+        
+
 def main():
 
     name = input("Hva heter du? ")
@@ -142,11 +185,12 @@ def main():
 
     print("1. Vanlig løpetur")
     print("2. Intervalløkt")
+    print("3. Historik/statestikk")
 
     while True:
         workout_choice = get_number("Velg økttype: ", int)
 
-        if workout_choice == 1 or workout_choice == 2:
+        if workout_choice == 1 or workout_choice == 2 or workout_choice == 3:
             break
 
         print("Ugyldig tall, velg 1 eller 2.")
@@ -157,6 +201,8 @@ def main():
     elif workout_choice == 2:
         handle_interval_run()
 
+    elif workout_choice == 3:
+        show_history()
 
 if __name__ == "__main__":
     main()
